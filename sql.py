@@ -58,10 +58,17 @@ def salva(tmdb, imdb, titulo_original, titulo_traduzido, pagina, pasta, data_rel
 def delete(tmdb):
         cursor = conn.cursor()
         try:
-            cursor.execute("DELETE FROM poster WHERE TMDB = %s", [tmdb])
-            cursor.close()
-            conn.commit()
-            return True
+                cursor.execute("DELETE FROM poster WHERE TMDB = %s", [tmdb])
+                cursor.close()
+                conn.commit()
+                return True
         except (Exception, conn.Error) as error:
-            print(error)
-            return False        
+                print(error)
+                return False
+        
+def graficoAnoPoster():
+        cursor = conn.cursor()
+        cursor.execute("SELECT coalesce(ANO, 2020) AS ANO, COUNT(*) AS QTDE FROM POSTER GROUP BY ANO ORDER BY 1")
+        dados = cursor.fetchall()
+        cursor.close()
+        return dados

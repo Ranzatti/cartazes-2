@@ -9,6 +9,8 @@ from st_aggrid.shared import JsCode
 import requests as rq
 import datetime
 
+import altair as alt
+
 st.set_page_config(
     page_title="Coleção de Posters de Jornal",
     page_icon="🧊",
@@ -262,4 +264,42 @@ with col2:
             columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS, 
             updateMode=GridUpdateMode.VALUE_CHANGED,
             allow_unsafe_jscode=True
-            )                        
+            )
+    
+
+
+
+
+############################################################
+######################### GRAFICO ##########################
+############################################################
+dados = sql.graficoAnoPoster()
+ano = []
+quantidade = []
+
+i = 0
+for dado in dados:
+    ano.append(dados[i][0])
+    quantidade.append(dados[i][1])
+    i += 1
+
+source = pd.DataFrame({
+    'Ano': ano,
+    'Quantidade': quantidade
+})
+
+bar_chart = alt.Chart(source).mark_bar().encode(
+    x='Ano:O',
+    y='Quantidade',
+    color=alt.condition(
+        alt.datum.Ano == 2020,  # If the year is 1810 this test returns True,
+        alt.value('red'),     # which sets the bar orange.
+        alt.value('steelblue')   # And if it's not true it sets the bar steelblue.
+    )
+).properties(
+    title='Quantidade por Ano',
+    width=600, 
+    height=500
+)
+
+st.altair_chart(bar_chart, use_container_width=True)
