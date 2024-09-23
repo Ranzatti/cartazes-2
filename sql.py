@@ -3,14 +3,14 @@ import re
 
 def get_all():
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM POSTER ORDER BY ANO")
+        cursor.execute("SELECT * FROM POSTERS ORDER BY ID DESC")
         dados = cursor.fetchall()
         cursor.close()
         return dados
 
 def get_poster(tmdb):
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM POSTER WHERE TMDB = %s", [tmdb])
+        cursor.execute("SELECT * FROM POSTERS WHERE TMDB = %s", [tmdb])
         dados = cursor.fetchall()
         cursor.close()
 
@@ -33,7 +33,7 @@ def salva(tmdb, imdb, titulo_original, titulo_traduzido, pagina, pasta, data_rel
 
         try:
             if(dados):
-                    cursor.execute(""" UPDATE poster SET 
+                    cursor.execute(""" UPDATE POSTERS SET 
                         imdb = %s,
                         titulo_original = %s,
                         titulo_traduzido = %s,
@@ -46,7 +46,7 @@ def salva(tmdb, imdb, titulo_original, titulo_traduzido, pagina, pasta, data_rel
                         cores = %s
                         WHERE TMDB = %s """, [imdb, titulo_original, titulo_traduzido, ano, pagina, pasta, data_release, link_imagem, sinopse, cores, tmdb])
             else:
-                    cursor.execute("INSERT INTO poster (tmdb, imdb, titulo_original, titulo_traduzido, ano, pagina, pasta, data_release, link_imagem, sinopse, cores) VALUES (%s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s)", 
+                    cursor.execute("INSERT INTO POSTERS (tmdb, imdb, titulo_original, titulo_traduzido, ano, pagina, pasta, data_release, link_imagem, sinopse, cores) VALUES (%s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s)", 
                                    [tmdb, imdb, titulo_original, titulo_traduzido, ano, pagina, pasta, data_release, link_imagem, sinopse, cores])
             cursor.close()
             conn.commit()
@@ -58,7 +58,7 @@ def salva(tmdb, imdb, titulo_original, titulo_traduzido, pagina, pasta, data_rel
 def delete(tmdb):
         cursor = conn.cursor()
         try:
-                cursor.execute("DELETE FROM poster WHERE TMDB = %s", [tmdb])
+                cursor.execute("DELETE FROM POSTERS WHERE TMDB = %s", [tmdb])
                 cursor.close()
                 conn.commit()
                 return True
@@ -68,7 +68,7 @@ def delete(tmdb):
         
 def graficoAnoPoster():
         cursor = conn.cursor()
-        cursor.execute("SELECT coalesce(ANO, 2020) AS ANO, COUNT(*) AS QTDE FROM POSTER GROUP BY ANO ORDER BY 1")
+        cursor.execute("SELECT coalesce(ANO, 2020) AS ANO, COUNT(*) AS QTDE FROM POSTERS GROUP BY ANO ORDER BY 1")
         dados = cursor.fetchall()
         cursor.close()
         return dados

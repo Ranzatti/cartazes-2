@@ -135,6 +135,7 @@ if modal.is_open():
                                 if sql.salva(tmdb, imdb, titulo_original, titulo_traduzido, pagina, pasta, data_release, link_imagem, sinopse, cores):
                                     with colbotoes[2]:                        
                                         st.success('Poster Atualizado com Sucesso!')
+                                        modal.close()
                                 else:
                                     with colbotoes[2]:                        
                                         st.error('Ops deu erro')
@@ -207,6 +208,7 @@ cell_renderer_imdb =  JsCode("""
 dados = sql.get_all()
 # st.write(dados)
 
+id=[]
 tmdb = []
 imdb = []
 titulo_original = []
@@ -218,6 +220,7 @@ link_imagem = []
 link_tmdb = []
 link_imdb = []
 for linha in dados:
+    id.append(linha[0])
     tmdb.append(linha[1])
     imdb.append(linha[2])
     titulo_original.append(linha[3])
@@ -230,6 +233,7 @@ for linha in dados:
     link_imdb.append(f"https://www.imdb.com/title/{linha[2]}")
 
 df=pd.DataFrame({
+    "ID":id,
     "Ano":ano,
     "TMDB":tmdb,
     "Título Original":titulo_original,

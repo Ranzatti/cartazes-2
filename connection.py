@@ -1,9 +1,9 @@
 import psycopg2
 
 conn = psycopg2.connect(
-    dbname='socorrpm',
-    user='socorrpm',
-    password='SICSADM',
+    dbname='ranzatti',
+    user='ranzatti',
+    password='a',
     host='localhost'
 
     #dbname='snrmyrdk',
