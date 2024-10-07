@@ -8,6 +8,7 @@ from st_aggrid.grid_options_builder import GridOptionsBuilder
 from st_aggrid.shared import JsCode
 import requests as rq
 import datetime
+from dateutil import parser
 
 import altair as alt
 
@@ -72,8 +73,8 @@ if modal.is_open():
                             ano = int(dados_filme['release_date'][0:4])
                             mes = int(dados_filme['release_date'][5:7])
                             dia = int(dados_filme['release_date'][8:])
-                            vPagina = ""
-                            vPasta = ""
+                            vPagina = "-1"
+                            vPasta = "-1"
                             vLink = f"https://image.tmdb.org/t/p/w600_and_h900_bestv2{dados_filme['poster_path']}"
                             vSinopse = dados_filme['overview']
                             vColorido = 0
@@ -106,26 +107,28 @@ if modal.is_open():
                     if resposta.status_code == 200:
                             imagens = resposta.json()
                             jpgs = imagens['posters']
+                            
+                            # Exibindo os posters horizontalmente com colunas
+                            st.subheader("Posters Disponíveis (Alternativa)")
 
-                            div = """ 
-                                <style>
-                                    .table_wrapper{
-                                    display: block;
-                                    overflow-x: auto;
-                                    white-space: nowrap;
-                                    }
-                                </style>
-                            """
-                            st.markdown(div, unsafe_allow_html=True)
+                            # Defina um tamanho maior para as colunas
+                            num_colunas = 5  # Defina quantas colunas você quer por linha
+                            cols = st.columns(num_colunas)
 
-                            colunas = ''
-                            for jpg in jpgs:
-                                colunas = colunas + f"""<td><img width="100px" src="https://image.tmdb.org/t/p/w600_and_h900_bestv2{jpg['file_path']}"></td>"""
+                            # Adiciona as imagens nas colunas com espaçamento e largura ajustada
+                            for i, jpg in enumerate(jpgs):
+                                img_url = f"https://image.tmdb.org/t/p/w600_and_h900_bestv2{jpg['file_path']}"
+                                
+                                # Use um espaçamento e ajuste a largura da imagem
+                                with cols[i % num_colunas]:  # Adiciona a imagem na coluna correspondente
+                                    st.image(img_url, width=150)  # Aumente a largura da imagem
 
-                            tabela = "<nav aria-label='breadcrumb'><ol class='breadcrumb''><label>Posters Disponíveis</label><div class='table_wrapper'><table><tr>" + colunas + "</tr></table></div></ol></nav>"
-
-                            st.markdown(tabela, unsafe_allow_html=True)
+                            # Se você quiser adicionar uma nova linha após cada conjunto de imagens
+                            if len(jpgs) > num_colunas:
+                                st.write("") 
                     st.divider()
+
+
                     # ate aqui
 
                     #Botoes
@@ -205,8 +208,6 @@ cell_renderer_imdb =  JsCode("""
     }
     """)
 
-dados = sql.get_all()
-# st.write(dados)
 
 id=[]
 tmdb = []
@@ -216,9 +217,12 @@ titulo_traduzido = []
 ano = []
 pagina = []
 pasta = []
+data_release = []
 link_imagem = []
 link_tmdb = []
 link_imdb = []
+dados = sql.get_all()
+# st.write(dados)
 for linha in dados:
     id.append(linha[0])
     tmdb.append(linha[1])
@@ -228,6 +232,9 @@ for linha in dados:
     ano.append(linha[5])
     pagina.append(linha[6])
     pasta.append(linha[7])
+    if linha[8] is not None:
+        ano2, mes, dia = linha[8].split('-')
+    data_release.append( f"{dia}-{mes}-{ano2}")
     link_imagem.append(linha[9])
     link_tmdb.append(f"https://www.themoviedb.org/movie/{linha[1]}")
     link_imdb.append(f"https://www.imdb.com/title/{linha[2]}")
@@ -236,10 +243,12 @@ df=pd.DataFrame({
     "ID":id,
     "Ano":ano,
     "TMDB":tmdb,
+    "IMDB":imdb,
     "Título Original":titulo_original,
     "Título Traduzido":titulo_traduzido,
-    "Pasta":pasta,
+    "Data Release":data_release,
     "Página":pagina,
+    "Pasta":pasta,
     "Imagem":link_imagem,
     "Link TMDB":link_tmdb,
     "Link IMDB":link_imdb,
@@ -247,28 +256,29 @@ df=pd.DataFrame({
     #"IMDB":imdb,
 
 gb = GridOptionsBuilder.from_dataframe(df, theme='streamlit')
-gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=30)
-gb.configure_column('Ano', minWidth=70, maxWidth=70)
-gb.configure_column('TMDB', minWidth=80, maxWidth=100, editable=True)
+gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=100)
+gb.configure_column('Ano')
+gb.configure_column('TMDB', editable=True)
+gb.configure_column('IMDB', editable=True)
 gb.configure_column('Título Original', minWidth=600, maxWidth=620, editable=True)
 gb.configure_column('Título Traduzido', minWidth=600, maxWidth=600, editable=True)
-#gb.configure_column('IMDB', minWidth=100,maxWidth=100)
-gb.configure_column('Página', minWidth=50, maxWidth=80)
-gb.configure_column('Pasta', minWidth=50, maxWidth=70)
-gb.configure_column('Imagem', cellRenderer=cell_renderer, minWidth=90, maxWidth=90)
+gb.configure_column('Página')
+gb.configure_column('Pasta')
+gb.configure_column('Data Release')
+gb.configure_column('Imagem', cellRenderer=cell_renderer)
 gb.configure_column('Link TMDB', cellRenderer=cell_renderer_tmdb, minWidth=120,maxWidth=100)
 gb.configure_column('Link IMDB', cellRenderer=cell_renderer_imdb, minWidth=120,maxWidth=100)
 gridoption = gb.build()
 
-col1, col2, col3 = st.columns([30,200,30])
-with col2:
-    AgGrid(df,
-            gridOptions=gridoption,
-            #custom_css=custom_css,
-            columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS, 
-            updateMode=GridUpdateMode.VALUE_CHANGED,
-            allow_unsafe_jscode=True
-            )
+#col1, col2, col3 = st.columns([30,200,30])
+#with col2:
+AgGrid(df,
+        gridOptions=gridoption,
+        #custom_css=custom_css,
+        columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW, 
+        updateMode=GridUpdateMode.VALUE_CHANGED,
+        allow_unsafe_jscode=True
+        )
     
 
 
