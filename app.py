@@ -34,14 +34,12 @@ if open_modal:
 
 if modal.is_open():
     with modal.container():
-            bPodeExcluir = False
             colinicio, colinicio2, colinicio3 = st.columns((2, 6, 0.1))
             with colinicio:
                 tmdb = st.text_input('TMDB')
             if tmdb:
                 dados_filme = sql.get_poster(tmdb)
                 if dados_filme:
-                    bPodeExcluir = True
 
                     #st.write(dados_filme)
                     with colinicio2:
@@ -174,15 +172,14 @@ if modal.is_open():
                                     with colbotoes[2]:                        
                                         st.error('Ops deu erro')
                     with colbotoes[1]:
-                        if bPodeExcluir:
-                            if st.button('Excluir', type="secondary"):
-                                    if sql.delete(tmdb):
-                                        with colbotoes[2]:                        
-                                            # st.success('Poster excluido com Sucesso!')
-                                            modal.close()
-                                    else:
-                                        with colbotoes[2]:                        
-                                            st.error('Ops deu erro')
+                        if st.button('Excluir', type="secondary"):
+                                if sql.delete(tmdb):
+                                    with colbotoes[2]:
+                                        # st.success('Poster excluido com Sucesso!')
+                                        modal.close()
+                                else:
+                                    with colbotoes[2]:
+                                        st.error('Ops deu erro')
                 else:
                     with colinicio2:
                         st.info('Filme não encontrado')
@@ -263,6 +260,7 @@ for linha in dados:
     ano.append(linha[5])
     pagina.append(linha[6])
     pasta.append(linha[7])
+    ano2 = ano
     if linha[8] is not None:
         ano2, mes, dia = linha[8].split('-')
     data_release.append( f"{dia}-{mes}-{ano2}")
