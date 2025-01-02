@@ -8,7 +8,6 @@ from st_aggrid.grid_options_builder import GridOptionsBuilder
 from st_aggrid.shared import JsCode
 import requests as rq
 import datetime
-from dateutil import parser
 
 import altair as alt
 
